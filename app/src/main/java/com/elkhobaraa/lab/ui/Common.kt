@@ -41,22 +41,23 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-val LabBlue = Color(0xFF0B5FA5)
-val LabBlueDark = Color(0xFF074477)
-val LabSky = Color(0xFF29B6F6)
-val AbnormalRed = Color(0xFFD32F2F)
+val LabPrimary = Color(0xFF991717)
+val LabPrimaryDark = Color(0xFF6E0F0F)
+val LabGrey = Color(0xFF3A3A3A)
+val AbnormalRed = Color(0xFFE53935)
 val OkGreen = Color(0xFF2E7D32)
 
 @Composable
 fun LabTheme(content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = lightColorScheme(
-            primary = LabBlue,
+            primary = LabPrimary,
             onPrimary = Color.White,
-            primaryContainer = Color(0xFFD6E8F8),
-            onPrimaryContainer = Color(0xFF06325A),
-            secondary = LabSky,
-            background = Color(0xFFF4F8FC),
+            primaryContainer = Color(0xFFF8E3E3),
+            onPrimaryContainer = Color(0xFF5A0B0B),
+            secondary = LabGrey,
+            onSurface = Color(0xFF2B2B2B),
+            background = Color(0xFFFAF6F6),
             surface = Color.White,
             error = AbnormalRed,
         )
@@ -71,16 +72,14 @@ fun LabTheme(content: @Composable () -> Unit) {
 fun LogoView(size: Dp) {
     val ctx = LocalContext.current
     val custom = remember(LogoStore.version) { LogoStore.custom(ctx)?.asImageBitmap() }
-    if (custom != null) {
-        Box(
-            Modifier.size(size).clip(CircleShape).background(Color.White).border(2.dp, Color.White, CircleShape),
-            contentAlignment = Alignment.Center,
-        ) {
-            Image(custom, null, Modifier.fillMaxSize(0.88f), contentScale = ContentScale.Fit)
-        }
-    } else {
-        Box(Modifier.size(size).clip(CircleShape).background(LabBlue).border(2.dp, Color.White, CircleShape)) {
-            Image(painterResource(R.drawable.ic_logo_fg), null, Modifier.fillMaxSize())
+    Box(
+        Modifier.size(size).clip(CircleShape).background(Color.White).border(2.dp, Color.White, CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        if (custom != null) {
+            Image(custom, null, Modifier.fillMaxSize(0.86f), contentScale = ContentScale.Fit)
+        } else {
+            Image(painterResource(R.drawable.lab_logo), null, Modifier.fillMaxSize(0.86f), contentScale = ContentScale.Fit)
         }
     }
 }
@@ -104,7 +103,7 @@ fun ScreenScaffold(
                 },
                 actions = actions,
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = LabBlue,
+                    containerColor = LabPrimary,
                     titleContentColor = Color.White,
                     navigationIconContentColor = Color.White,
                     actionIconContentColor = Color.White,
@@ -138,7 +137,7 @@ fun StatCard(title: String, value: String, icon: ImageVector, color: Color, modi
 fun SectionTitle(text: String) {
     Text(
         text, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold,
-        color = LabBlue, modifier = Modifier.padding(top = 8.dp, bottom = 2.dp),
+        color = LabPrimary, modifier = Modifier.padding(top = 8.dp, bottom = 2.dp),
     )
 }
 

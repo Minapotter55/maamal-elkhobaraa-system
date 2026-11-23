@@ -37,6 +37,7 @@ object Backup {
             .put("orders", JSONArray(d.allOrders().map {
                 JSONObject().put("id", it.id).put("patientId", it.patientId).put("createdAt", it.createdAt)
                     .put("total", it.total).put("discount", it.discount).put("paid", it.paid).put("delivered", it.delivered)
+                    .put("doctor", it.doctor).put("symptoms", it.symptoms).put("notes", it.notes)
             }))
             .put("items", JSONArray(d.allItems().map {
                 JSONObject().put("id", it.id).put("orderId", it.orderId).put("testId", it.testId).put("testName", it.testName)
@@ -68,7 +69,8 @@ object Backup {
         }
         val orders = arr("orders").map {
             LabOrder(it.getLong("id"), it.getLong("patientId"), it.getLong("createdAt"), it.getDouble("total"),
-                it.optDouble("discount", 0.0), it.optDouble("paid", 0.0), it.optBoolean("delivered"))
+                it.optDouble("discount", 0.0), it.optDouble("paid", 0.0), it.optBoolean("delivered"),
+                it.optString("doctor"), it.optString("symptoms"), it.optString("notes"))
         }
         val items = arr("items").map {
             OrderItem(it.getLong("id"), it.getLong("orderId"), it.getLong("testId"), it.getString("testName"),

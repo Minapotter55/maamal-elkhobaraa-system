@@ -17,7 +17,9 @@ class LabApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        db = Room.databaseBuilder(this, LabDatabase::class.java, "lab.db").build()
+        db = Room.databaseBuilder(this, LabDatabase::class.java, "lab.db")
+            .addMigrations(LabDatabase.MIGRATION_1_2)
+            .build()
         CoroutineScope(Dispatchers.IO).launch {
             if (dao.testCount() == 0) dao.insertTests(Seed.tests())
         }

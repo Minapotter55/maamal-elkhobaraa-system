@@ -40,7 +40,7 @@ fun TestsScreen(nav: NavController) {
                 onClick = { editing = null; showDialog = true },
                 icon = { Icon(Icons.Filled.Add, null) },
                 text = { Text("إضافة تحليل") },
-                containerColor = LabBlue, contentColor = Color.White,
+                containerColor = LabPrimary, contentColor = Color.White,
             )
         },
     ) { pad ->
@@ -68,7 +68,7 @@ fun TestsScreen(nav: NavController) {
                                     style = MaterialTheme.typography.bodySmall, color = Color.Gray,
                                 )
                             }
-                            Text(money(t.price), fontWeight = FontWeight.Bold, color = LabBlue)
+                            Text(money(t.price), fontWeight = FontWeight.Bold, color = LabPrimary)
                         }
                     }
                 }

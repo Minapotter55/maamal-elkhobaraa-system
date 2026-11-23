@@ -87,7 +87,7 @@ fun ResultsScreen(nav: NavController, id: Long) {
         ) {
             itemsIndexed(items, key = { _, it -> it.id }) { idx, item ->
                 val f = item.flag()
-                val color = if (f != 0) AbnormalRed else LabBlue
+                val color = if (f != 0) AbnormalRed else LabGrey
                 Card(
                     colors = CardDefaults.cardColors(containerColor = if (f != 0) Color(0xFFFFEBEE) else Color.White),
                 ) {

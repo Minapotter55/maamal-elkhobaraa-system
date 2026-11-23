@@ -10,7 +10,6 @@ import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
-import androidx.core.content.ContextCompat
 import com.elkhobaraa.lab.R
 import java.io.File
 
@@ -38,26 +37,16 @@ object LogoStore {
         version++
     }
 
-    /** Square bitmap of the logo, for the PDF report. */
+    /** Square bitmap of the logo on white, for the PDF report. */
     fun bitmap(ctx: Context, size: Int): Bitmap {
         val out = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val c = Canvas(out)
-        val p = Paint(Paint.ANTI_ALIAS_FLAG)
-        p.color = 0xFFFFFFFF.toInt()
-        c.drawCircle(size / 2f, size / 2f, size / 2f, p)
-        val custom = custom(ctx)
-        if (custom != null) {
-            val scale = minOf(size * 0.86f / custom.width, size * 0.86f / custom.height)
-            val w = custom.width * scale
-            val h = custom.height * scale
-            c.drawBitmap(custom, null, RectF((size - w) / 2, (size - h) / 2, (size + w) / 2, (size + h) / 2), p)
-        } else {
-            p.color = 0xFF0B5FA5.toInt()
-            c.drawCircle(size / 2f, size / 2f, size / 2f - size * 0.04f, p)
-            val d = ContextCompat.getDrawable(ctx, R.drawable.ic_logo_fg)!!
-            d.setBounds(0, 0, size, size)
-            d.draw(c)
-        }
+        c.drawColor(0xFFFFFFFF.toInt())
+        val src = custom(ctx) ?: BitmapFactory.decodeResource(ctx.resources, R.drawable.lab_logo)
+        val scale = minOf(size.toFloat() / src.width, size.toFloat() / src.height)
+        val w = src.width * scale
+        val h = src.height * scale
+        c.drawBitmap(src, null, RectF((size - w) / 2, (size - h) / 2, (size + w) / 2, (size + h) / 2), Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG))
         return out
     }
 }

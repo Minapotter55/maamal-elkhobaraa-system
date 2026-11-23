@@ -35,6 +35,9 @@ data class LabOrder(
     val discount: Double = 0.0,
     val paid: Double = 0.0,
     val delivered: Boolean = false,
+    val doctor: String = "",
+    val symptoms: String = "",
+    val notes: String = "",
 ) {
     val net: Double get() = (total - discount).coerceAtLeast(0.0)
     val remaining: Double get() = (net - paid).coerceAtLeast(0.0)

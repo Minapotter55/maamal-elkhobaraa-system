@@ -17,15 +17,15 @@ object ReportPdf {
     private const val W = 595
     private const val H = 842
     private const val M = 30f
-    private const val BLUE = 0xFF0B5FA5.toInt()
-    private const val LIGHT = 0xFFE3F0FB.toInt()
-    private const val RED = 0xFFD32F2F.toInt()
-    private const val DARK = 0xFF1F2937.toInt()
+    private const val BLUE = 0xFF991717.toInt() // brand maroon
+    private const val LIGHT = 0xFFFBF1F1.toInt()
+    private const val RED = 0xFFE53935.toInt()
+    private const val DARK = 0xFF2B2B2B.toInt()
     private const val GREY = 0xFF6B7280.toInt()
 
     fun create(ctx: Context, data: OrderData): File {
         val doc = PdfDocument()
-        val logo = LogoStore.bitmap(ctx, 160)
+        val logo = LogoStore.bitmap(ctx, 320)
         var pageNo = 0
         var page: PdfDocument.Page? = null
         var c = Canvas()
@@ -43,14 +43,14 @@ object ReportPdf {
         }
 
         fun footer() {
-            val line = Paint().apply { color = BLUE; strokeWidth = 1.5f }
-            c.drawLine(M, H - 58f, W - M, H - 58f, line)
-            text(c, LabInfo.ADDRESS, M, H - 52f, W - 2 * M, paint(10f, DARK, bold = true), Layout.Alignment.ALIGN_CENTER)
+            c.drawRect(0f, H - 50f, W.toFloat(), H.toFloat(), Paint().apply { color = BLUE })
+            val wp = paint(10f, 0xFFFFFFFF.toInt(), bold = true)
+            text(c, LabInfo.ADDRESS, M, H - 45f, W - 2 * M, wp, Layout.Alignment.ALIGN_CENTER)
             text(
-                c, "واتساب: ${LabInfo.WHATSAPP}   -   اتصال: ${LabInfo.PHONE}", M, H - 36f, W - 2 * M,
-                paint(10f, BLUE, bold = true), Layout.Alignment.ALIGN_CENTER,
+                c, "واتساب: ${LabInfo.WHATSAPP}   -   اتصال: ${LabInfo.PHONE}", M, H - 29f, W - 2 * M,
+                wp, Layout.Alignment.ALIGN_CENTER,
             )
-            text(c, "صفحة $pageNo", M, H - 20f, W - 2 * M, paint(8f, GREY), Layout.Alignment.ALIGN_CENTER)
+            text(c, "$pageNo", W - M - 20f, H - 16f, 20f, paint(7f, 0xFFF6DADA.toInt()))
         }
 
         fun newPage() {
@@ -59,17 +59,17 @@ object ReportPdf {
             val pg = doc.startPage(PdfDocument.PageInfo.Builder(W, H, pageNo).create())
             page = pg
             c = pg.canvas
-            // Header band
-            c.drawRect(0f, 0f, W.toFloat(), 104f, Paint().apply { color = BLUE })
-            c.drawBitmap(logo, null, RectF(W - M - 76f, 14f, W - M, 90f), Paint(Paint.FILTER_BITMAP_FLAG))
-            val rightW = 300f
-            text(c, LabInfo.NAME, W - M - 86f - rightW, 18f, rightW, paint(24f, 0xFFFFFFFF.toInt(), bold = true))
-            text(c, LabInfo.TAGLINE, W - M - 86f - rightW, 54f, rightW, paint(12f, 0xFFDCEBFA.toInt()))
-            val en = paint(11f, 0xFFFFFFFF.toInt(), bold = true)
-            text(c, LabInfo.NAME_EN, M, 20f, 200f, en)
-            text(c, "WhatsApp: ${LabInfo.WHATSAPP}", M, 42f, 200f, paint(10f, 0xFFFFFFFF.toInt()))
-            text(c, "Tel: ${LabInfo.PHONE}", M, 58f, 200f, paint(10f, 0xFFFFFFFF.toInt()))
-            y = 116f
+            // Header: logo + name on white, maroon rule underneath
+            c.drawBitmap(logo, null, RectF(W - M - 92f, 10f, W - M, 102f), Paint(Paint.FILTER_BITMAP_FLAG))
+            val rightW = 260f
+            text(c, LabInfo.NAME, W - M - 102f - rightW, 22f, rightW, paint(26f, BLUE, bold = true))
+            text(c, LabInfo.TAGLINE, W - M - 102f - rightW, 60f, rightW, paint(12f, 0xFF3A3A3A.toInt(), bold = true))
+            text(c, LabInfo.NAME_EN, M, 22f, 180f, paint(11f, BLUE, bold = true))
+            text(c, "WhatsApp: ${LabInfo.WHATSAPP}", M, 42f, 180f, paint(10f, DARK))
+            text(c, "Tel: ${LabInfo.PHONE}", M, 58f, 180f, paint(10f, DARK))
+            c.drawRect(0f, 108f, W.toFloat(), 112f, Paint().apply { color = BLUE })
+            c.drawRect(0f, 114f, W.toFloat(), 115f, Paint().apply { color = 0xFF3A3A3A.toInt() })
+            y = 126f
         }
 
         newPage()
@@ -79,12 +79,16 @@ object ReportPdf {
         val o = data.order
         val boxH = 78f
         c.drawRoundRect(RectF(M, y, W - M, y + boxH), 8f, 8f, Paint().apply { color = LIGHT })
+        c.drawRoundRect(
+            RectF(M, y, W - M, y + boxH), 8f, 8f,
+            Paint(Paint.ANTI_ALIAS_FLAG).apply { color = BLUE; style = Paint.Style.STROKE; strokeWidth = 1f },
+        )
         val half = (W - 2 * M) / 2f
         val lp = paint(11f, DARK)
         val right = listOf(
             "اسم المريض: ${pt.name}",
             "السن: ${pt.age.ifBlank { "-" }}     النوع: ${pt.gender.ifBlank { "-" }}",
-            "الطبيب المحول: ${pt.doctor.ifBlank { "-" }}",
+            "الطبيب المعالج: ${o.doctor.ifBlank { pt.doctor }.ifBlank { "-" }}",
         )
         val left = listOf(
             "رقم الطلب: ${o.id}",
@@ -101,7 +105,7 @@ object ReportPdf {
         y += 26f
         tableHeader()
 
-        val bottomLimit = H - 110f
+        val bottomLimit = H - 80f
         data.items.forEachIndexed { idx, item ->
             val flag = item.flag()
             val nameP = paint(10.5f, DARK, bold = true)
@@ -113,7 +117,8 @@ object ReportPdf {
             if (y + rowH > bottomLimit) {
                 newPage(); tableHeader()
             }
-            if (idx % 2 == 1) c.drawRect(M, y, W - M, y + rowH, Paint().apply { color = 0xFFF5F9FD.toInt() })
+            if (flag != 0) c.drawRect(M, y, W - M, y + rowH, Paint().apply { color = 0xFFFFEBEE.toInt() })
+            else if (idx % 2 == 1) c.drawRect(M, y, W - M, y + rowH, Paint().apply { color = 0xFFF7F7F7.toInt() })
             text(c, item.testName, cols[0] + 6f, y + 5f, cols[1] - cols[0] - 12f, nameP)
             val res = item.result.ifBlank { "-" } + when (flag) { 1 -> "  H"; -1 -> "  L"; else -> "" }
             text(c, res, cols[1] + 6f, y + 5f, cols[2] - cols[1] - 12f, paint(10.5f, if (flag != 0) RED else DARK, bold = flag != 0))
@@ -123,6 +128,14 @@ object ReportPdf {
             y += rowH
         }
 
+        if (o.notes.isNotBlank()) {
+            val np = paint(10.5f, DARK)
+            val nh = measure("ملاحظات: ${o.notes}", W - 2 * M, np)
+            if (y + nh + 20f > bottomLimit) newPage()
+            y += 12f
+            text(c, "ملاحظات: ${o.notes}", M, y, W - 2 * M, np)
+            y += nh
+        }
         if (y + 60f > bottomLimit) newPage()
         y += 14f
         text(c, "* النتائج باللون الأحمر خارج المعدل الطبيعي (H مرتفع - L منخفض)", M, y, W - 2 * M, paint(9.5f, RED))

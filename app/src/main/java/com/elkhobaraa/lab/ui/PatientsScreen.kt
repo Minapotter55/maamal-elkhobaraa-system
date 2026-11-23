@@ -43,7 +43,7 @@ fun PatientsScreen(nav: NavController) {
                 onClick = { editing = null; showDialog = true },
                 icon = { Icon(Icons.Filled.PersonAdd, null) },
                 text = { Text("إضافة مريض") },
-                containerColor = LabBlue, contentColor = Color.White,
+                containerColor = LabPrimary, contentColor = Color.White,
             )
         },
     ) { pad ->
@@ -72,12 +72,12 @@ fun PatientsScreen(nav: NavController) {
                                         .filterNotNull().joinToString("  •  "),
                                     color = Color.Gray, style = MaterialTheme.typography.bodySmall,
                                 )
-                                if (p.doctor.isNotBlank()) Text("د/ ${p.doctor}", color = LabBlue, style = MaterialTheme.typography.bodySmall)
+                                if (p.doctor.isNotBlank()) Text("د/ ${p.doctor}", color = LabPrimary, style = MaterialTheme.typography.bodySmall)
                             }
                             IconButton(onClick = { nav.navigate("neworder?patientId=${p.id}") }) {
                                 Icon(Icons.Filled.AddCircle, "طلب جديد", tint = OkGreen)
                             }
-                            IconButton(onClick = { editing = p; showDialog = true }) { Icon(Icons.Filled.Edit, "تعديل", tint = LabBlue) }
+                            IconButton(onClick = { editing = p; showDialog = true }) { Icon(Icons.Filled.Edit, "تعديل", tint = LabPrimary) }
                             IconButton(onClick = { toDelete = p }) { Icon(Icons.Filled.Delete, "حذف", tint = AbnormalRed) }
                         }
                     }
@@ -106,7 +106,7 @@ fun PatientsScreen(nav: NavController) {
 fun PatientDialog(initial: Patient?, onSave: (Patient) -> Unit, onDismiss: () -> Unit) {
     var name by remember { mutableStateOf(initial?.name ?: "") }
     var age by remember { mutableStateOf(initial?.age ?: "") }
-    var gender by remember { mutableStateOf(initial?.gender ?: "ذكر") }
+    var gender by remember { mutableStateOf(initial?.gender ?: "") }
     var phone by remember { mutableStateOf(initial?.phone ?: "") }
     var doctor by remember { mutableStateOf(initial?.doctor ?: "") }
 
@@ -117,21 +117,21 @@ fun PatientDialog(initial: Patient?, onSave: (Patient) -> Unit, onDismiss: () ->
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 OutlinedTextField(name, { name = it }, label = { Text("الاسم *") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(
-                    age, { age = it }, label = { Text("السن") }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                    age, { age = it }, label = { Text("السن (اختياري)") }, singleLine = true, modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("النوع:")
                     listOf("ذكر", "أنثى").forEach { g ->
-                        RadioButton(selected = gender == g, onClick = { gender = g })
+                        RadioButton(selected = gender == g, onClick = { gender = if (gender == g) "" else g })
                         Text(g)
                     }
                 }
                 OutlinedTextField(
-                    phone, { phone = it }, label = { Text("التليفون") }, singleLine = true, modifier = Modifier.fillMaxWidth(),
+                    phone, { phone = it }, label = { Text("التليفون (اختياري)") }, singleLine = true, modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                 )
-                OutlinedTextField(doctor, { doctor = it }, label = { Text("الدكتور المحول") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                OutlinedTextField(doctor, { doctor = it }, label = { Text("الدكتور المحول (اختياري)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
             }
         },
         confirmButton = {

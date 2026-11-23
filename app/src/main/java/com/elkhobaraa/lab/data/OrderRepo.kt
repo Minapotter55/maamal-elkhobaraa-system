@@ -7,11 +7,15 @@ object OrderRepo {
     private val db get() = LabApp.db
     private val dao get() = LabApp.dao
 
-    suspend fun create(p: Patient, tests: List<LabTest>, discount: Double, paid: Double): Long =
+    suspend fun create(
+        p: Patient, tests: List<LabTest>, discount: Double, paid: Double,
+        doctor: String = "", symptoms: String = "", notes: String = "",
+    ): Long =
         db.withTransaction {
             val now = System.currentTimeMillis()
             val id = dao.insertOrder(
-                LabOrder(patientId = p.id, createdAt = now, total = tests.sumOf { it.price }, discount = discount, paid = paid)
+                LabOrder(patientId = p.id, createdAt = now, total = tests.sumOf { it.price }, discount = discount, paid = paid,
+                    doctor = doctor, symptoms = symptoms, notes = notes)
             )
             dao.insertItems(tests.map {
                 OrderItem(

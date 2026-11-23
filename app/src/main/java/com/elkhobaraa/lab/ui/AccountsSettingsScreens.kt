@@ -52,7 +52,7 @@ fun AccountsScreen(nav: NavController) {
             item {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     StatCard("إيراد اليوم", money(today), Icons.Filled.Today, OkGreen, Modifier.weight(1f))
-                    StatCard("إيراد الشهر", money(monthRev), Icons.Filled.CalendarMonth, LabBlue, Modifier.weight(1f))
+                    StatCard("إيراد الشهر", money(monthRev), Icons.Filled.CalendarMonth, LabPrimary, Modifier.weight(1f))
                 }
             }
             item {
@@ -149,7 +149,7 @@ fun SettingsScreen(nav: NavController) {
             HorizontalDivider()
             SectionTitle("بيانات المعمل")
             LabeledValue("الاسم", LabInfo.NAME)
-            Text(LabInfo.TAGLINE, color = LabBlue)
+            Text(LabInfo.TAGLINE, color = LabPrimary)
             LabeledValue("العنوان", "")
             Text(LabInfo.ADDRESS)
             LabeledValue("واتساب", LabInfo.WHATSAPP)

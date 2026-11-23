@@ -46,7 +46,7 @@ fun OrderRowCard(row: OrderRow, onClick: () -> Unit) {
                     if (o.remaining > 0.001) Text("باقي ${money(o.remaining)}", color = AbnormalRed, style = MaterialTheme.typography.bodySmall)
                 }
             }
-            Text(money(o.net), fontWeight = FontWeight.Bold, color = LabBlue)
+            Text(money(o.net), fontWeight = FontWeight.Bold, color = LabPrimary)
         }
     }
 }
@@ -64,7 +64,7 @@ fun OrdersScreen(nav: NavController) {
             ExtendedFloatingActionButton(
                 onClick = { nav.navigate("neworder") },
                 icon = { Icon(Icons.Filled.Add, null) }, text = { Text("طلب جديد") },
-                containerColor = LabBlue, contentColor = Color.White,
+                containerColor = LabPrimary, contentColor = Color.White,
             )
         },
     ) { pad ->
@@ -101,10 +101,16 @@ fun NewOrderScreen(nav: NavController, initialPatientId: Long) {
     var paid by remember { mutableStateOf("") }
     var showAddPatient by remember { mutableStateOf(false) }
     var saving by remember { mutableStateOf(false) }
+    var percentMode by remember { mutableStateOf(false) }
+    var showExtra by remember { mutableStateOf(false) }
+    var doctor by remember { mutableStateOf("") }
+    var symptoms by remember { mutableStateOf("") }
+    var notes by remember { mutableStateOf("") }
+    LaunchedEffect(patient?.id) { patient?.doctor?.let { if (doctor.isBlank()) doctor = it } }
 
     val chosen = tests.filter { it.id in selected }
     val total = chosen.sumOf { it.price }
-    val disc = discount.toAmount()
+    val disc = if (percentMode) total * discount.toAmount().coerceIn(0.0, 100.0) / 100.0 else discount.toAmount()
     val net = (total - disc).coerceAtLeast(0.0)
     val pd = paid.toAmount()
 
@@ -120,7 +126,7 @@ fun NewOrderScreen(nav: NavController, initialPatientId: Long) {
                 item {
                     Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
                         Row(Modifier.padding(12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Filled.Person, null, tint = LabBlue)
+                            Icon(Icons.Filled.Person, null, tint = LabPrimary)
                             Spacer(Modifier.width(8.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(p.name, fontWeight = FontWeight.Bold)
@@ -137,7 +143,7 @@ fun NewOrderScreen(nav: NavController, initialPatientId: Long) {
                             pq, { pq = it }, label = { Text("ابحث بالاسم أو التليفون") }, singleLine = true,
                             leadingIcon = { Icon(Icons.Filled.Search, null) }, modifier = Modifier.weight(1f),
                         )
-                        IconButton(onClick = { showAddPatient = true }) { Icon(Icons.Filled.PersonAdd, "مريض جديد", tint = LabBlue) }
+                        IconButton(onClick = { showAddPatient = true }) { Icon(Icons.Filled.PersonAdd, "مريض جديد", tint = LabPrimary) }
                     }
                 }
                 val fp = patients.filter { pq.isBlank() || it.name.contains(pq.trim(), true) || it.phone.contains(pq.trim()) }.take(6)
@@ -155,7 +161,7 @@ fun NewOrderScreen(nav: NavController, initialPatientId: Long) {
             item { SectionTitle("2) اختر التحاليل (${selected.size})") }
             if (chosen.isNotEmpty()) {
                 item {
-                    Text(chosen.joinToString("، ") { it.name }, color = LabBlue, style = MaterialTheme.typography.bodySmall)
+                    Text(chosen.joinToString("، ") { it.name }, color = LabPrimary, style = MaterialTheme.typography.bodySmall)
                 }
             }
             item {
@@ -173,7 +179,7 @@ fun NewOrderScreen(nav: NavController, initialPatientId: Long) {
                 ) {
                     Checkbox(checked = on, onCheckedChange = { if (on) selected.remove(t.id) else selected.add(t.id) })
                     Text(t.name, Modifier.weight(1f))
-                    Text(money(t.price), color = LabBlue)
+                    Text(money(t.price), color = LabPrimary)
                 }
             }
 
@@ -182,15 +188,41 @@ fun NewOrderScreen(nav: NavController, initialPatientId: Long) {
                 Card(colors = CardDefaults.cardColors(containerColor = Color.White)) {
                     Column(Modifier.padding(12.dp)) {
                         LabeledValue("الإجمالي", money(total), bold = true)
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text("الخصم:", color = Color.Gray)
+                            FilterChip(selected = !percentMode, onClick = { percentMode = false; discount = "" }, label = { Text("مبلغ (ج.م)") })
+                            FilterChip(selected = percentMode, onClick = { percentMode = true; discount = "" }, label = { Text("نسبة %") })
+                        }
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            NumberField(discount, { discount = it }, "الخصم", Modifier.weight(1f))
+                            NumberField(
+                                discount, { discount = it },
+                                if (percentMode) "نسبة الخصم % (اختياري)" else "مبلغ الخصم (اختياري)", Modifier.weight(1f),
+                            )
                             NumberField(paid, { paid = it }, "المدفوع", Modifier.weight(1f))
                         }
+                        if (percentMode && disc > 0) LabeledValue("قيمة الخصم", money(disc), valueColor = LabPrimary)
                         TextButton(onClick = { paid = com.elkhobaraa.lab.util.num(net) }) { Text("دفع المبلغ كامل") }
                         HorizontalDivider()
                         LabeledValue("الصافي بعد الخصم", money(net), bold = true)
                         LabeledValue("المدفوع", money(pd), valueColor = OkGreen)
                         LabeledValue("الباقي", money((net - pd).coerceAtLeast(0.0)), valueColor = AbnormalRed, bold = true)
+                    }
+                }
+            }
+            item {
+                TextButton(onClick = { showExtra = !showExtra }) {
+                    Icon(if (showExtra) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore, null)
+                    Text("4) بيانات إضافية - اختياري (الدكتور المعالج، الأعراض، ملاحظات)")
+                }
+            }
+            if (showExtra) {
+                item {
+                    Card(colors = CardDefaults.cardColors(containerColor = Color.White)) {
+                        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            OutlinedTextField(doctor, { doctor = it }, label = { Text("الدكتور المعالج / المحول (اختياري)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(symptoms, { symptoms = it }, label = { Text("الأعراض (اختياري)") }, modifier = Modifier.fillMaxWidth())
+                            OutlinedTextField(notes, { notes = it }, label = { Text("ملاحظات - تظهر في التقرير (اختياري)") }, modifier = Modifier.fillMaxWidth())
+                        }
                     }
                 }
             }
@@ -202,7 +234,7 @@ fun NewOrderScreen(nav: NavController, initialPatientId: Long) {
                         if (disc > total) { Toast.makeText(ctx, "الخصم أكبر من الإجمالي", Toast.LENGTH_SHORT).show(); return@Button }
                         saving = true
                         scope.launch {
-                            val id = OrderRepo.create(pt, chosen, disc, pd)
+                            val id = OrderRepo.create(pt, chosen, disc, pd, doctor.trim(), symptoms.trim(), notes.trim())
                             Toast.makeText(ctx, "تم حفظ الطلب رقم $id", Toast.LENGTH_SHORT).show()
                             nav.popBackStack()
                             nav.navigate("order/$id")
@@ -253,8 +285,10 @@ fun OrderDetailScreen(nav: NavController, id: Long) {
                         Text(d.patient.name, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
                         LabeledValue("السن / النوع", "${d.patient.age.ifBlank { "-" }} / ${d.patient.gender.ifBlank { "-" }}")
                         LabeledValue("التليفون", d.patient.phone.ifBlank { "-" })
-                        LabeledValue("الدكتور المحول", d.patient.doctor.ifBlank { "-" })
+                        LabeledValue("الدكتور المعالج", o.doctor.ifBlank { d.patient.doctor }.ifBlank { "-" })
                         LabeledValue("التاريخ", Dates.format(o.createdAt))
+                        if (o.symptoms.isNotBlank()) LabeledValue("الأعراض", o.symptoms)
+                        if (o.notes.isNotBlank()) LabeledValue("ملاحظات", o.notes)
                     }
                 }
             }
